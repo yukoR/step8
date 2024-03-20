@@ -1,0 +1,61 @@
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities; */
+
+th {
+    white-space: nowrap;
+}
+
+td {
+    white-space: wrap;
+}
+
+#idAsterisk {
+    color: red;
+}
+
+.form-item {
+    display: flex;
+    align-items: center;
+    height: 100%
+}
+
+.btn {
+    margin: 0, 5px;
+}
+
+.img {
+    max-width: 100px;
+    height: auto;
+}
+
+.detail-image {
+    max-width: 200px;
+    height: auto;
+}
+
+.required::after {
+    content: "*";
+    color: red;
+}
+
+.container {
+    padding: 20px;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.product-detail__image {
+    margin-bottom: 10px;
+}
+
+.product-detail__button {
+    margin-top: 20px;
+}
+
+.text-red-500 {
+    color: red;
+}

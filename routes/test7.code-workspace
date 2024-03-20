@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"name": "test7",
+			"path": ".."
+		}
+	],
+	"settings": {
+		"cosine.AIModel": "Smarter"
+	}
+}
