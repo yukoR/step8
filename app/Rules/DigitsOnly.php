@@ -11,8 +11,7 @@ class DigitsOnly implements Rule
      *
      * @return void
      */
-    public function __construct()
-    {
+    public function __construct() {
         //
     }
 
