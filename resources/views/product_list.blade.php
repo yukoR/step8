@@ -6,7 +6,27 @@
     <div class="row justify-content-center">
         <div class="col-md-9">
             <h1 class="title">商品一覧</h1>
-            @include('search_form')
+            
+            <div class="row mt-4 mb-4">
+                <form action="{{ route('search') }}" method="post" class="row">
+                    @csrf
+                    <div class="col">
+                        <input type="text" class="form-control" name="search" placeholder="検索キーワード" value="{{ request('search') }}">
+                    </div>
+                    <div class="col">
+                        <select name="companyId" class="form-control">
+                            <option value="0">企業を選択してください</option>
+                            @foreach($companies as $company)
+                                <option value="{{ $company->id }}">{{ $company->company_name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-secondary">検索</button>
+                    </div>
+                </form>
+            </div>
+
             <div class="card">
                 <div class="card-body">
                     <div class="products">
@@ -44,7 +64,11 @@
                                         <td>
                                             <div class="d-flex justify-content-between">
                                                 <button type="button" class="btn btn-info btn-sm text-nowrap" onclick="location.href='{{ route($detail, $product) }}'">詳細</button>
-                                                @include('delete_form')
+                                                <form action="{{ route('product.destroy', $product) }}" method="post">
+                                                    @csrf
+                                                    @method('delete')
+                                                    <button type="submit" class="btn btn-danger btn-sm text-nowrap" id="btnDeleteButton" onclick="return confirm('本当に削除しますか')">削除</button>
+                                                </form>
                                             </div>
                                         </td>
                                     </tr>
