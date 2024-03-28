@@ -41,13 +41,18 @@
                                 <div class="form-group mt-3">
                                     <div class="row">
                                         <div class="col-md-4">
-                                            <label for="txtCompanyName" class="required">メーカー名</label>
+                                            <label for="selectCompanyName" class="required">メーカー名</label>
                                         </div>
                                         <div class="col-md-8">
-                                            <input type="text" class="form-control" id="txtCompanyName" name="companyName" value="{{ old('companyName') }}">
-                                            @error('companyName')
-                                                <div class="text-red-500">{{ $message }}</div>
-                                            @enderror
+                                            <select name="companyName" id="selectCompanyName" class="form-control">
+                                                <option value="" selected hidden>企業名を選択</option>
+                                                @foreach($company as $company)
+                                                    <option value="{{ $company->company_name }}">{{ $company->company_name }}</option>
+                                                @endforeach
+                                                @error('companyName')
+                                                    <div class="text-red-500">{{ $message }}</div>
+                                                @enderror
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
