@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchFormController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,7 +27,7 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/home', 'HomeController@show')->name('home');
+Route::get('/home', [HomeController::class, 'show'])->name('home');
 
 // 商品一覧画面
 Route::get('product_list', [ProductController::class, 'index'])->name('product.list');
