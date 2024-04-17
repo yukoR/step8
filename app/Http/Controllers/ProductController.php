@@ -14,7 +14,8 @@ class ProductController extends Controller
 {
     // 商品編集画面
     public function edit(Product $product) {
-        return view('product_edit',compact('product'));
+        $company = Company::all();
+        return view('product_edit',compact('product','company'));
     }
 
     // 商品詳細画面
@@ -25,7 +26,8 @@ class ProductController extends Controller
 
     // 商品登録画面
     public function show() {
-        return view('product_register');
+        $company = Company::all();
+        return view('product_register',compact('company'));
     }
 
     // 商品の登録
@@ -46,9 +48,10 @@ class ProductController extends Controller
             // }
 
             if ($request->hasFile('image')) {
-                $path = request()->file('image')->getClientOriginalName();
-                request()->file('image')->move('public/storage', $path);
-                $product->img_path = $path;
+                $file = $request->file('image');
+                $file_name = time() . '_' . $file->getClientOriginalName();
+                $file->move(storage_path('app/public'), $file_name);
+                $product->img_path = 'storage/' . $file_name;
             }
             $product->company()->associate($company);
             $product->save();
@@ -87,9 +90,10 @@ class ProductController extends Controller
             }
 
             if ($request->hasFile('image')) {
-                $path = request()->file('image')->getClientOriginalName();
-                request()->file('image')->move('public/storage', $path);
-                $product->img_path = $path;
+                $file = $request->file('image');
+                $file_name = time() . '_' . $file->getClientOriginalName();
+                $file->move(storage_path('app/public'), $file_name);
+                $product->img_path = 'storage/' . $file_name;
             }
 
             // error
@@ -106,6 +110,7 @@ class ProductController extends Controller
             return response()->json(['Error' => 'Failed to update product'], 500);
         }
     }
+
     // 商品の削除
     public function delete(Product $product) {
         try {
