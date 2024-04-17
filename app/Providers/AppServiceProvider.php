@@ -12,8 +12,7 @@ class AppServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
-    {
+    public function register() {
         //
     }
 
@@ -22,16 +21,12 @@ class AppServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
-    {
+    public function boot() {
         view::share('list','product.list');
         view::share('detail','product.detail');
         view::share('id','$product->id');
-
         view::share('register','product.register');
         view::share('edit','product.edit');
         view::share('delete','delete');
-        
-
     }
 }
