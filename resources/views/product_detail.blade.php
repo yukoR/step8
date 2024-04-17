@@ -21,7 +21,7 @@
                                         @if(!$product->img_path)
                                             <td>No Image</td>
                                         @else
-                                            <td><img src="{{ asset('storage/' . $product->img_path) }}" class="img-thumbnail detail-image" alt="Product Image"></td>
+                                            <td><img src="{{ asset($product->img_path) }}" class="img-thumbnail detail-image" alt="Product Image"></td>
                                         @endif
                                     </tr>
                                     <tr>

@@ -52,7 +52,7 @@
                                         <td>{{ $product->id }}. </td>
                                         <td>
                                             @if($product->img_path)
-                                                <img src="{{ asset('storage/' . $product->img_path) }}" alt="Product Image" class="img">
+                                                <img src="{{ asset($product->img_path) }}" alt="Product Image" class="img">
                                             @else
                                                 <p>画像はありません</p>
                                             @endif
