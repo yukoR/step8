@@ -47,8 +47,8 @@ Route::get('/product_register', [ProductController::class, 'show'])->name('produ
 Route::post('store', [ProductController::class, 'store'])->name('store');
 
 // 商品検索
-Route::get('/search_form', [SearchFormController::class, 'search'])->name('search.form');
-Route::post('/search_form', [SearchFormController::class, 'search'])->name('search');
+Route::get('/search_form', [ProductController::class, 'search'])->name('search.form');
+Route::post('/search_form', [ProductController::class, 'search'])->name('search');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
