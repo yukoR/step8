@@ -17,7 +17,7 @@
                         <select name="companyId" class="form-control">
                             <option value="0">企業を選択してください</option>
                             @foreach($companies as $company)
-                                <option value="{{ $company->id }}">{{ $company->company_name }}</option>
+                                <option value="{{ $company->id }}">{{$company->id}}, {{ $company->company_name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -34,12 +34,12 @@
                             <thead>
                                 <tr>
                                     <div class="">
-                                        <th>ID</th>
-                                        <th>商品画像</th>
-                                        <th>商品名</th>
-                                        <th>メーカー名</th>
-                                        <th>価格</th>
-                                        <th>在庫数</th>
+                                        <th>@sortablelink('id', 'ID')</th>
+                                        <th>@sortablelink('img_path', '商品画像')</th>
+                                        <th>@sortablelink('product_name', '商品名')</th>
+                                        <th>@sortablelink('company.company_name', 'メーカー名')</th>
+                                        <th>@sortablelink('price', '価格')</th>
+                                        <th>@sortablelink('stock', '在庫数')</th>
                                         <th>
                                             <button type="button" class="btn btn-primary text-nowrap" onclick="location.href='{{ route($register) }}'">新規登録</button>
                                         </th>

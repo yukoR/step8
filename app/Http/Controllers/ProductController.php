@@ -134,11 +134,12 @@ class ProductController extends Controller
     // 商品の一覧
     public function index(Request $request) {
         $companies = Company::all();
-        $query = Product::with('company');
-        $products = Product::with('company')->orderBy('company_id', 'desc')->get();
+        $query = Product::with('company')->sortable();
+        // $products = Product::with('company')->sortable()->get();
         if ($request->has('company_name')) {
             $query->where('company_name', $request->input('company_name'));
         }
+        
         $products = $query->get();
         return view('product_list', compact('products', 'companies'));
     }
