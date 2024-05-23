@@ -123,11 +123,11 @@ class ProductController extends Controller
             // }
 
             DB::commit();
-            return redirect()->route('product.list');
+            return response()->json(['success' => true, 'message' => 'Product deleted successfully.']);
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('ProductDeleteTransaction failed: ' . $e->getMessage());
-            return response()->json(['Error' => 'Failed to delete product']); 
+            return response()->json(['error' => true, 'message' => 'Failed to delete product']); 
         }
     }
 
@@ -141,7 +141,20 @@ class ProductController extends Controller
         }
         
         $products = $query->get();
-        return view('product_list', compact('products', 'companies'));
+        return view(('product_list'), compact('products', 'companies'));
+    }
+
+    // 商品の一覧 partial
+    public function partial(Request $request) {
+        $companies = Company::all();
+        $query = Product::with('company')->sortable();
+        // $products = Product::with('company')->sortable()->get();
+        if ($request->has('company_name')) {
+            $query->where('company_name', $request->input('company_name'));
+        }
+        
+        $products = $query->get();
+        return view(('partials.product_list'), compact('products', 'companies'));
     }
 
     //商品の検索
@@ -150,6 +163,8 @@ class ProductController extends Controller
         $keyword = $request->input('search');
         $companyId = $request->input('companyId');
         $query = Product::query();
+
+        Log::info('検索リクエスト', ['search' => $keyword, 'companyId' => $companyId]);
 
         // 検索キーワードがある場合
         if (!empty($keyword)) {
@@ -161,10 +176,15 @@ class ProductController extends Controller
             });
         }
         // 企業名セレクトで検索
-        if (!empty($companyId)) {
+    if (!empty($companyId) && $companyId != 0) {
             $query->where('company_id', $companyId);
         }
         $products = $query->get();
+
+        if ($request->ajax()) {
+            return view('partials.product_list', compact('products'))->render();
+        }
+
         return view('product_list', compact('products', 'companies'));
     }
 }

@@ -36,7 +36,10 @@ Route::get('product_list', [ProductController::class, 'index'])->name('product.l
 Route::get('product_detail/{product}', [ProductController::class, 'detail'])->name('product.detail');
 
 // 商品削除
-Route::delete('delete_form/{product}',[ProductController::class, 'delete'])->name('product.destroy');
+Route::delete('product/{product}',[ProductController::class, 'delete'])->name('product.delete');
+
+// partial view
+Route::get('/partials/product_list', [ProductController::class, 'partial'])->name('partials.product_list');
 
 // 商品編集画面
 Route::get('/product_edit/{product}', [ProductController::class, 'edit'])->name('product.edit');
@@ -47,7 +50,7 @@ Route::get('/product_register', [ProductController::class, 'show'])->name('produ
 Route::post('store', [ProductController::class, 'store'])->name('store');
 
 // 商品検索
-Route::get('/search_form', [ProductController::class, 'search'])->name('search.form');
+Route::get('/search/products', [ProductController::class, 'search'])->name('search.products');
 Route::post('/search_form', [ProductController::class, 'search'])->name('search');
 
 Route::middleware('auth')->group(function () {

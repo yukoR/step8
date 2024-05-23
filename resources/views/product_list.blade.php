@@ -8,13 +8,13 @@
             <h1 class="title">商品一覧</h1>
             
             <div class="row mt-4 mb-4">
-                <form action="{{ route('search') }}" method="post" class="row">
+                <form action="{{ route('search') }}" id="search-form" class="row">
                     @csrf
                     <div class="col">
-                        <input type="text" class="form-control" name="search" placeholder="検索キーワード" value="{{ request('search') }}">
+                        <input type="text" class="form-control" id="search-keyword" name="search" placeholder="検索キーワード" value="{{ request('search') }}">
                     </div>
                     <div class="col">
-                        <select name="companyId" class="form-control">
+                        <select name="companyId" id="company-select" class="form-control">
                             <option value="0">企業を選択してください</option>
                             @foreach($companies as $company)
                                 <option value="{{ $company->id }}">{{$company->id}}, {{ $company->company_name }}</option>
@@ -27,58 +27,90 @@
                 </form>
             </div>
 
+            <div id="message"></div>
             <div class="card">
                 <div class="card-body">
-                    <div class="products">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <div class="">
-                                        <th>@sortablelink('id', 'ID')</th>
-                                        <th>@sortablelink('img_path', '商品画像')</th>
-                                        <th>@sortablelink('product_name', '商品名')</th>
-                                        <th>@sortablelink('company.company_name', 'メーカー名')</th>
-                                        <th>@sortablelink('price', '価格')</th>
-                                        <th>@sortablelink('stock', '在庫数')</th>
-                                        <th>
-                                            <button type="button" class="btn btn-primary text-nowrap" onclick="location.href='{{ route($register) }}'">新規登録</button>
-                                        </th>
-                                    </div>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($products as $product)
-                                    <tr>
-                                        <td>{{ $product->id }}. </td>
-                                        <td>
-                                            @if($product->img_path)
-                                                <img src="{{ asset($product->img_path) }}" alt="Product Image" class="img">
-                                            @else
-                                                <p>画像はありません</p>
-                                            @endif
-                                        </td>
-                                        <td>{{ $product->product_name }}</td>
-                                        <td>{{ $product->company->company_name }}</td>
-                                        <td>{{ $product->price }}</td>
-                                        <td>{{ $product->stock }}</td>
-                                        <td>
-                                            <div class="d-flex justify-content-between">
-                                                <button type="button" class="btn btn-info btn-sm text-nowrap" onclick="location.href='{{ route($detail, $product) }}'">詳細</button>
-                                                <form action="{{ route('product.destroy', $product) }}" method="post">
-                                                    @csrf
-                                                    @method('delete')
-                                                    <button type="submit" class="btn btn-danger btn-sm text-nowrap" id="btnDeleteButton" onclick="return confirm('本当に削除しますか')">削除</button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                    <div class="products" id="product-list">
+                        @include('partials.product_list', ['products' => $products])
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready(function() {
+
+        //検索機能
+        $('#search-form').on('submit', function(event) {
+            event.preventDefault();
+            console.log('フォームが送信されました');
+            $.ajax({
+                url: "{{ route('search.products') }}",
+                method: 'GET',
+                data: {
+                    search: $('#search-keyword').val(),
+                    companyId: $('#company-select').val()
+                },
+                success: function(response) {
+                    console.log('検索結果', response);
+                    $('#product-list').html(response);
+                },
+                error: function(xhr) {
+                    console.log('エラー', xhr.responseText);
+                }
+            })
+        })
+
+        //削除機能
+        $(document).on('click', '.delete-button', function() {
+            var productId = $(this).data('id');
+
+            if (confirm('本当に削除しますか？')) {
+                $.ajax({
+                    url: '/product/' + productId,
+                    type: 'DELETE',
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert('商品情報を削除しました。');
+                            refreshProductList();
+
+                        } else {
+                            alert('Failed to delete product.');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('An error occurred: エラーなの？' + error);
+                    }
+                });
+            }
+        });
+
+        //Refresh Product_list
+        function refreshProductList() {
+            $.ajax({
+                url: "{{ route('partials.product_list') }}",
+                type: 'GET',
+                success: function(response) {
+                    $('#product-list').html(response);
+                    if ($('#product-table tr').length == 0) {
+                        $('#no-products-message').show();
+                    } else {
+                        $('#no-products-message').hide();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#message').html('<div class="alert alert-danger">An error occurred: エラなの？' + error + '</div>');
+                }
+            });
+        }
+        if ($('#product-table tr').length == 0) {
+            $('#no-products-message').show();
+        }
+    });
+</script>
 @endsection
