@@ -50,7 +50,7 @@ Route::get('/product_register', [ProductController::class, 'show'])->name('produ
 Route::post('store', [ProductController::class, 'store'])->name('store');
 
 // 商品検索
-Route::get('/search/products', [ProductController::class, 'search'])->name('search.products');
+Route::get('products/search/', [ProductController::class, 'search'])->name('search.products');
 Route::post('/search_form', [ProductController::class, 'search'])->name('search');
 
 Route::middleware('auth')->group(function () {

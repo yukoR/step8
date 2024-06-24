@@ -141,20 +141,9 @@ class ProductController extends Controller
         }
         
         $products = $query->get();
-        return view(('product_list'), compact('products', 'companies'));
-    }
-
-    // 商品の一覧 partial
-    public function partial(Request $request) {
-        $companies = Company::all();
-        $query = Product::with('company')->sortable();
-        // $products = Product::with('company')->sortable()->get();
-        if ($request->has('company_name')) {
-            $query->where('company_name', $request->input('company_name'));
-        }
-        
-        $products = $query->get();
-        return view(('partials.product_list'), compact('products', 'companies'));
+        $sortedPrices = Product::orderBy('price', 'desc')->pluck('price')->unique();
+        $sortedStocks = Product::orderBy('stock', 'desc')->pluck('stock')->unique();
+        return view(('product_list'), compact('products', 'companies', 'sortedPrices', 'sortedStocks'));
     }
 
     //商品の検索
@@ -162,29 +151,41 @@ class ProductController extends Controller
         $companies = Company::all();
         $keyword = $request->input('search');
         $companyId = $request->input('companyId');
-        $query = Product::query();
+        $query = Product::with('company');
 
         Log::info('検索リクエスト', ['search' => $keyword, 'companyId' => $companyId]);
 
         // 検索キーワードがある場合
         if (!empty($keyword)) {
-            $query->where('product_name', 'like', '%' . $keyword . '%');
-        }
-        if (!empty($keyword)) {
-            $query->orWhereHas('company', function ($query) use ($keyword) {
-                $query->where('company_name', 'like', '%' . $keyword . '%');
+            $query->where('product_name', 'like', '%' . $keyword . '%')
+                ->orWhereHas('company', function ($query) use ($keyword) {
+                    $query->where('company_name', 'like', '%' . $keyword . '%');
             });
         }
         // 企業名セレクトで検索
-    if (!empty($companyId) && $companyId != 0) {
+        if (!empty($companyId) && $companyId != 0) {
             $query->where('company_id', $companyId);
         }
-        $products = $query->get();
 
-        if ($request->ajax()) {
-            return view('partials.product_list', compact('products'))->render();
+        // 価格で検索
+        if ($request->has('priceSearch') && $request->priceSearch != 0) {
+            $query->where('price', $request->priceSearch);
         }
 
-        return view('product_list', compact('products', 'companies'));
+        // 在庫数で検索
+        if ($request->has('stockSearch') && $request->stockSearch != 0) {
+            $query->where('stock', $request->stockSearch);
+        }
+
+        $products = $query->get();
+        
+        if ($request->ajax()) {
+            return response()->json(['products' => $products]);
+        }
+
+        $sortedPrices = Product::orderBy('price', 'desc')->pluck('price')->unique();
+        $sortedStocks = Product::orderBy('stock', 'desc')->pluck('stock')->unique();
+
+        return view('product_list', compact('products', 'companies', 'sortedPrices', 'sortedStocks'));
     }
 }
