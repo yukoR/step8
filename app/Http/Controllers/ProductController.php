@@ -133,17 +133,15 @@ class ProductController extends Controller
 
     // 商品の一覧
     public function index(Request $request) {
-        $companies = Company::all();
-        $query = Product::with('company')->sortable();
-        // $products = Product::with('company')->sortable()->get();
+        
+        $query = Product::query()->with('company')->sortable();
         if ($request->has('company_name')) {
             $query->where('company_name', $request->input('company_name'));
         }
         
+        $companies = Company::all();
         $products = $query->get();
-        $sortedPrices = Product::orderBy('price', 'desc')->pluck('price')->unique();
-        $sortedStocks = Product::orderBy('stock', 'desc')->pluck('stock')->unique();
-        return view(('product_list'), compact('products', 'companies', 'sortedPrices', 'sortedStocks'));
+        return view(('product_list'), compact('products', 'companies'));
     }
 
     //商品の検索
@@ -151,41 +149,85 @@ class ProductController extends Controller
         $companies = Company::all();
         $keyword = $request->input('search');
         $companyId = $request->input('companyId');
+        $priceMin = $request->input('price_min');
+        $priceMax = $request->input('price_max');
+        $stockMin = $request->input('stockMin');
+        $stockMax = $request->input('stockMax');
+        $sort = $request->input('sort');
+        $direction = $request->input('direction', 'asc');
         $query = Product::with('company');
 
-        Log::info('検索リクエスト', ['search' => $keyword, 'companyId' => $companyId]);
+        Log::info('検索リクエスト', [
+            'search' => $keyword,
+            'companyId' => $companyId,
+            'priceMin' => $priceMin,
+            'priceMax' => $priceMax,
+            'stockMin' => $stockMin,
+            'stockMax' => $stockMax,
+        ]);
 
         // 検索キーワードがある場合
         if (!empty($keyword)) {
-            $query->where('product_name', 'like', '%' . $keyword . '%')
+            $query->where(function($query) use ($keyword) {
+                $query->where('product_name', 'like', '%' . $keyword . '%')
                 ->orWhereHas('company', function ($query) use ($keyword) {
                     $query->where('company_name', 'like', '%' . $keyword . '%');
+                });
             });
         }
+
         // 企業名セレクトで検索
         if (!empty($companyId) && $companyId != 0) {
             $query->where('company_id', $companyId);
         }
 
-        // 価格で検索
-        if ($request->has('priceSearch') && $request->priceSearch != 0) {
-            $query->where('price', $request->priceSearch);
+        // 価格下限
+        if ($request->filled('price_min')) {
+            $query->where('price', '>=', $priceMin);
         }
 
-        // 在庫数で検索
-        if ($request->has('stockSearch') && $request->stockSearch != 0) {
-            $query->where('stock', $request->stockSearch);
+        // 価格上限
+        if ($request->filled('price_max')) {
+            $query->where('price', '<=', $priceMax);
         }
 
-        $products = $query->get();
+        // 在庫下限
+        if ($request->filled('stock_min')) {
+            $query->where('stock', '>=', $stockMin);
+        }
+
+        // 在庫上限
+        if ($request->filled('stock_max')) {
+            $query->where('stock', '<=', $stockMax);
+        }
+
+        if ($sort) {
+            $query->orderBy($sort, $direction);
+        }
+
+        // ソート
+        $sortableFields = ['id', 'product_name', 'price', 'stock'];
+        $direction = in_array($request->input('direction'), ['asc', 'desc']) ? $request->input('direction') : 'asc';
+
+        if ($request->has('sort') && $request->has('direction')) {
+            $sortableFields = ['id', 'product_name', 'price', 'stock'];
+            $sort = $request->input('sort');
+            $direction = $request->input('direction', 'asc');
+        
+            if (in_array($sort, $sortableFields)) {
+                $query->orderBy($sort, $direction);
+            } elseif ($sort == 'companies.company_name') {
+                $query->leftJoin('companies', 'products.company_id', '=', 'companies.id')
+                    ->select('products.*')
+                    ->orderBy('companies.company_name', $direction);
+            }
+        }
+        $products = $query->with('company')->get();
         
         if ($request->ajax()) {
             return response()->json(['products' => $products]);
         }
 
-        $sortedPrices = Product::orderBy('price', 'desc')->pluck('price')->unique();
-        $sortedStocks = Product::orderBy('stock', 'desc')->pluck('stock')->unique();
-
-        return view('product_list', compact('products', 'companies', 'sortedPrices', 'sortedStocks'));
+        return view('product_list', compact('products', 'companies'));
     }
 }
